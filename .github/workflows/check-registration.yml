@@ -82,4 +82,5 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
       - name: Show result
-        run: echo "检查结果: ${{ steps.check.outputs.status }}"    
+        run: echo "检查结果: ${{ steps.check.outputs.status }}"
+    
