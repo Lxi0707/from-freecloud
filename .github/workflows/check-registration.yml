@@ -1,0 +1,96 @@
+name: Check Registration Status
+
+on:
+  schedule:
+    # 每5分钟运行一次（使用 cron 语法）
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  check-registration:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests beautifulsoup4 python-telegram-bot
+
+    - name: Run registration check
+      id: check
+      run: |
+        cat << 'EOF' > check_registration.py
+        import requests
+        from bs4 import BeautifulSoup
+        import os
+        from telegram import Bot
+        from telegram.constants import ParseMode
+
+        # 配置
+        URL = "https://freecloud.ltd/register"
+        BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+        CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+
+        def check_registration_status():
+            try:
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+                response = requests.get(URL, headers=headers, timeout=10)
+                response.raise_for_status()
+                
+                soup = BeautifulSoup(response.text, 'html.parser')
+                
+                # 这里需要根据实际页面结构调整选择器
+                if "注册" in response.text and "暂未开放" not in response.text:
+                    return "🟢 注册页面开放中！"
+                elif "暂未开放" in response.text:
+                    return "🔴 注册暂未开放"
+                else:
+                    return "🟡 无法确定注册状态"
+                    
+            except Exception as e:
+                return f"⚠️ 检查注册状态时出错: {str(e)}"
+
+        def send_telegram_notification(message):
+            bot = Bot(token=BOT_TOKEN)
+            
+            # 创建美观的HTML格式消息
+            html_message = f"""
+            <b>🏠 FreeCloud 注册状态检查</b>
+            
+            🔗 <b>检查页面:</b> <code>{URL}</code>
+            
+            📊 <b>当前状态:</b> {message}
+            
+            ⏰ <b>检查时间:</b> {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+            """
+            
+            bot.send_message(
+                chat_id=CHAT_ID,
+                text=html_message,
+                parse_mode=ParseMode.HTML,
+                disable_web_page_preview=True
+            )
+
+        if __name__ == "__main__":
+            import datetime
+            status = check_registration_status()
+            print(f"::set-output name=status::{status}")
+            send_telegram_notification(status)
+        EOF
+
+        python check_registration.py
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+    - name: Show result
+      run: echo "检查结果: ${{ steps.check.outputs.status }}"
