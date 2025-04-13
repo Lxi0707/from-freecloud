@@ -23,9 +23,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests beautifulsoup4
 
-- name: Run registration check
-  run: |
-    python scripts/check_registration.py
-  env:
-    TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-    TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      - name: Run registration check
+        run: |
+          python check_registration.py
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
