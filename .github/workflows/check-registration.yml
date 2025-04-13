@@ -71,8 +71,9 @@ jobs:
 
           if __name__ == "__main__":
               status = check_registration_status()
-              print(f"status={status}") >> $GITHUB_OUTPUT
+              print(status)
               send_telegram_notification(status)
+              echo "status=$status" >> $GITHUB_OUTPUT
           EOF
 
           python check_registration.py
@@ -81,4 +82,4 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
       - name: Show result
-        run: echo "检查结果: ${{ steps.check.outputs.status }}"
+        run: echo "检查结果: ${{ steps.check.outputs.status }}"    
