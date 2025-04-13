@@ -26,8 +26,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python .github/scripts/check_registration.py
-          echo "status=$(grep -oP 'status=\K.*' <<< '${{ steps.check.outputs }}')" >> $GITHUB_OUTPUT
+          echo "status=$(python .github/scripts/check_registration.py | grep -oP 'status=\K.*')" >> $GITHUB_OUTPUT
 
       - name: Show result
         run: echo "检查结果: ${{ steps.check.outputs.status }}"
