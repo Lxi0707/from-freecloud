@@ -1,4 +1,4 @@
-import requests
+import cloudscraper
 from bs4 import BeautifulSoup
 import os
 
@@ -7,7 +7,10 @@ TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 URL = "https://freecloud.ltd/register"
 
-# 添加更多的请求头，模拟真实浏览器行为
+# 创建一个 Cloudscraper 实例
+scraper = cloudscraper.create_scraper()  # 自动处理 Cloudflare 防护
+
+# 定义请求头
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
@@ -15,7 +18,7 @@ HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
     "Connection": "keep-alive",
     "Upgrade-Insecure-Requests": "1",
-    "Referer": "https://freecloud.ltd/",  # 确保 Referer 是正确的
+    "Referer": "https://freecloud.ltd/",  # Referer 标头
 }
 
 def send_telegram_message(message):
@@ -25,16 +28,16 @@ def send_telegram_message(message):
         "text": message,
         "parse_mode": "HTML"  # 使用HTML格式来美化消息
     }
-    response = requests.post(url, data=data)
+    response = scraper.post(url, data=data)  # 使用scraper发送Telegram消息
     if response.status_code != 200:
         print(f"Error sending message: {response.status_code}")
     else:
         print("Message sent successfully!")
 
 def check_registration():
-    session = requests.Session()  # 使用Session对象，可以保持会话，模拟浏览器行为
     try:
-        response = session.get(URL, headers=HEADERS)  # 传入模拟的请求头
+        # 使用 Cloudscraper 发起 GET 请求
+        response = scraper.get(URL, headers=HEADERS)  # 传入模拟的请求头
         if response.status_code != 200:
             send_telegram_message(f"<b>注册页面无法访问!</b>\n状态码: {response.status_code}")
             return
