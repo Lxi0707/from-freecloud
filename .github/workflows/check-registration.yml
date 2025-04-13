@@ -92,5 +92,5 @@ jobs:
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
-    - name: Show result
-      run: echo "检查结果: ${{ steps.check.outputs.status }}"
+- name: 显示结果
+  run: echo "检查结果: ${{ steps.check.outputs.status }}"
